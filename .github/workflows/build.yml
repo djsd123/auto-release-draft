@@ -1,6 +1,9 @@
 name: Build
 on:
   push:
+    branches:
+      - master
+  create:
 jobs:
   build:
     name: Build and Test
