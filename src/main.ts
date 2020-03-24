@@ -13,7 +13,6 @@ export async function run(): Promise<void> {
 
     if (tag && version.isSemver(tag)) {
       const changelog = await getChangesIntroducedByTag(tag)
-
       releaseUrl = await github.createReleaseDraft(tag, token, changelog)
     }
     core.setOutput('release-url', releaseUrl)
