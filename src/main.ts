@@ -1,16 +1,22 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as event from './event'
+import * as version from './version'
+import {getChangesIntroducedByTag} from './git'
+import * as github from './github'
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const token = core.getInput('repo-token')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const tag = event.getCreatedTag()
+    let releaseUrl = ''
 
-    core.setOutput('time', new Date().toTimeString())
+    if (tag && version.isSemver(tag)) {
+      const changelog = await getChangesIntroducedByTag(tag)
+
+      releaseUrl = await github.createReleaseDraft(tag, token, changelog)
+    }
+    core.setOutput('release-url', releaseUrl)
   } catch (error) {
     core.setFailed(error.message)
   }
